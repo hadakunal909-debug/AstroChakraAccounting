@@ -1,0 +1,315 @@
+@import "tailwindcss";
+
+/* =============================================
+   ASTROCHAKRA — LIGHT THEME WITH GOLDEN ACCENTS
+   Logo-inspired: golden orbits, planetary colors
+   ============================================= */
+
+:root {
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --gold-dim: #8a6e2b;
+  --gold-bg: #fdf8ed;
+  --planet-purple: #7c5bf5;
+  --planet-blue: #3b82f6;
+  --planet-cyan: #06b6d4;
+  --planet-green: #10b981;
+  --planet-yellow: #fbbf24;
+  --planet-orange: #f97316;
+  --planet-red: #ef4444;
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius: 16px;
+  --radius-sm: 12px;
+}
+
+/* ===== GLOBAL ===== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f8f9fc;
+  min-height: 100vh;
+  color: #1e293b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+::selection {
+  background: rgba(212, 168, 67, 0.2);
+  color: #1e293b;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(212, 168, 67, 0.25); border-radius: 100px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(212, 168, 67, 0.4); }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes orbit-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(212, 168, 67, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(212, 168, 67, 0.4); }
+}
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-fade-in-up { animation: fadeInUp 0.45s ease-out both; }
+.animate-fade-in { animation: fadeIn 0.3s ease-out both; }
+.animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-slide-down { animation: slideDown 0.2s ease-out both; }
+
+.stagger-children > * { animation: fadeInUp 0.4s ease-out both; }
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+
+/* ==================================
+   HEADER — White glass with gold bar
+   ================================== */
+.sticky.top-0.z-30 {
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(212, 168, 67, 0.12) !important;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(212, 168, 67, 0.05);
+}
+
+/* ===== CARD ENHANCEMENTS ===== */
+.bg-white.rounded-xl,
+.bg-white.rounded-2xl {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+  transition: var(--transition);
+}
+
+.bg-white.rounded-xl:hover,
+.bg-white.rounded-2xl:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  transform: translateY(-1px);
+}
+
+.bg-white.rounded-xl:has(table):hover {
+  transform: none;
+}
+
+/* ===== FUND CARDS WITH ACCENTS ===== */
+.fund-card {
+  position: relative;
+  overflow: hidden;
+  background: #fff !important;
+  transition: var(--transition);
+}
+
+.fund-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  opacity: 0.85;
+}
+
+.fund-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important;
+  transform: translateY(-3px);
+}
+
+.fund-card.fc-available::before { background: linear-gradient(90deg, #10b981, #34d399); }
+.fund-card.fc-reserve::before { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+.fund-card.fc-allocated::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.fund-card.fc-balance::before { background: linear-gradient(90deg, var(--planet-purple), #a78bfa); }
+.fund-card.fc-income::before { background: linear-gradient(90deg, #10b981, #6ee7b7); }
+.fund-card.fc-expense::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+/* ===== BUTTONS ===== */
+button { transition: var(--transition); }
+
+.bg-indigo-600 {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim)) !important;
+  box-shadow: 0 2px 10px rgba(212, 168, 67, 0.3);
+}
+.bg-indigo-600:hover {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold)) !important;
+  box-shadow: 0 4px 18px rgba(212, 168, 67, 0.4);
+  transform: translateY(-1px);
+}
+
+.bg-violet-600 {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+}
+.bg-violet-600:hover {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+  box-shadow: 0 4px 18px rgba(124, 58, 237, 0.4);
+  transform: translateY(-1px);
+}
+
+.bg-emerald-600 {
+  background: linear-gradient(135deg, #059669, #047857) !important;
+  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.3);
+}
+
+.text-xs.font-medium.rounded-lg { transition: var(--transition); }
+.text-xs.font-medium.rounded-lg:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* ===== INPUT FOCUS RING ===== */
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.12) !important;
+  border-color: var(--gold) !important;
+}
+
+/* ===== MODAL ===== */
+.fixed.inset-0.z-50 {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.fixed.inset-0.z-50 > div {
+  animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ===== TABLE ROW HOVER ===== */
+table tbody tr { transition: background-color 0.15s ease; }
+table tbody tr:hover { background-color: rgba(212, 168, 67, 0.04) !important; }
+
+/* ===== NAV ===== */
+.absolute.top-full { animation: slideDown 0.15s ease-out both; }
+
+.bg-indigo-50.text-indigo-700,
+nav button.bg-indigo-50 {
+  background: rgba(212, 168, 67, 0.1) !important;
+  color: var(--gold-dim) !important;
+}
+
+/* ===== LOADING BAR ===== */
+.h-1.bg-indigo-200 {
+  background: rgba(212, 168, 67, 0.15) !important;
+}
+.h-1.bg-indigo-200 .bg-indigo-600 {
+  background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold)) !important;
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  box-shadow: none !important;
+}
+.h-1.bg-indigo-200 .bg-indigo-600:hover { transform: none !important; }
+
+/* ===== LOGIN PAGE ===== */
+.min-h-screen.bg-gradient-to-br {
+  background: linear-gradient(135deg, #fffcf5 0%, #fdf8ed 30%, #f8f4ff 60%, #fff7ed 100%) !important;
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+.min-h-screen.bg-gradient-to-br .bg-white.rounded-2xl {
+  border: 1px solid rgba(212, 168, 67, 0.15) !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.07), 0 0 30px rgba(212, 168, 67, 0.08) !important;
+}
+
+/* ===== CHARTS ===== */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line { stroke: #f1f5f9; }
+.recharts-tooltip-wrapper { filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1)); }
+
+/* ===== PROGRESS BAR ===== */
+.h-2.rounded-full { transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ===== STATUS BADGE ===== */
+.rounded-full.capitalize { transition: var(--transition); letter-spacing: 0.02em; }
+
+/* ===== COLORED ACCENTS ===== */
+.border-l-orange-400 { border-left-color: var(--gold) !important; }
+.border-l-violet-400 { border-left-color: var(--planet-purple) !important; }
+
+/* ===== INVENTORY FUND CARDS ===== */
+.fund-card.fc-inv-total::before { background: linear-gradient(90deg, #14b8a6, #2dd4bf); }
+.fund-card.fc-inv-value::before { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+.fund-card.fc-inv-low::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+.fund-card.fc-inv-categories::before { background: linear-gradient(90deg, var(--planet-purple), #a78bfa); }
+.fund-card.fc-inv-movements::before { background: linear-gradient(90deg, var(--planet-blue), #60a5fa); }
+.fund-card.fc-inv-invested::before { background: linear-gradient(90deg, #059669, #34d399); }
+
+/* Low stock pulse animation */
+@keyframes lowStockPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+.low-stock-alert {
+  animation: lowStockPulse 2s ease-in-out infinite;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Stock level badges */
+.stock-badge-ok { background: #ecfdf5; color: #059669; }
+.stock-badge-low { background: #fef3c7; color: #d97706; }
+.stock-badge-out { background: #fef2f2; color: #dc2626; }
+
+/* Inventory dashboard category chips */
+.inv-cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+}
+.inv-cat-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Inventory progress bars */
+.inv-stock-bar {
+  height: 6px;
+  border-radius: 100px;
+  background: #f1f5f9;
+  overflow: hidden;
+  transition: var(--transition);
+}
+.inv-stock-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .fund-card:hover, .bg-white.rounded-xl:hover { transform: none; }
+}
