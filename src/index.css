@@ -68,6 +68,10 @@ body {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -86,6 +90,7 @@ body {
 .animate-fade-in { animation: fadeIn 0.3s ease-out both; }
 .animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 .animate-slide-down { animation: slideDown 0.2s ease-out both; }
+.animate-page-enter { animation: pageEnter 0.3s ease-out both; }
 
 .stagger-children > * { animation: fadeInUp 0.4s ease-out both; }
 .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
@@ -105,6 +110,9 @@ body {
   border-bottom: 1px solid rgba(212, 168, 67, 0.12) !important;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(212, 168, 67, 0.05);
 }
+
+/* ===== PAGE CONTENT TRANSITIONS ===== */
+main > .space-y-6 { animation: pageEnter 0.25s ease-out both; }
 
 /* ===== CARD ENHANCEMENTS ===== */
 .bg-white.rounded-xl,
@@ -156,6 +164,7 @@ body {
 
 /* ===== BUTTONS ===== */
 button { transition: var(--transition); }
+button:active:not(:disabled) { transform: scale(0.97) !important; }
 
 .bg-indigo-600 {
   background: linear-gradient(135deg, var(--gold), var(--gold-dim)) !important;
@@ -196,24 +205,50 @@ input:focus, select:focus, textarea:focus {
 
 /* ===== MODAL ===== */
 .fixed.inset-0.z-50 {
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.15s ease-out both;
 }
 .fixed.inset-0.z-50 > div {
   animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  border: 1px solid rgba(212, 168, 67, 0.1);
+}
+
+/* ===== FORM SECTION GROUPS ===== */
+.form-section {
+  background: rgba(248, 249, 252, 0.6);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 /* ===== TABLE ROW HOVER ===== */
-table tbody tr { transition: background-color 0.15s ease; }
-table tbody tr:hover { background-color: rgba(212, 168, 67, 0.04) !important; }
+table tbody tr { transition: all 0.15s ease; border-left: 3px solid transparent; }
+table tbody tr:hover { background-color: rgba(212, 168, 67, 0.04) !important; border-left-color: var(--gold); }
 
 /* ===== NAV ===== */
+nav { position: relative; }
+nav button { position: relative; }
+nav > button::after, nav > div > button::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 25%; right: 25%;
+  height: 2px;
+  background: var(--gold);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
 .absolute.top-full { animation: slideDown 0.15s ease-out both; }
 
 .bg-indigo-50.text-indigo-700,
 nav button.bg-indigo-50 {
-  background: rgba(212, 168, 67, 0.1) !important;
+  background: rgba(212, 168, 67, 0.08) !important;
   color: var(--gold-dim) !important;
+}
+nav button.bg-indigo-50::after,
+nav .bg-indigo-50::after {
+  transform: scaleX(1) !important;
 }
 
 /* ===== LOADING BAR ===== */
@@ -274,9 +309,9 @@ nav button.bg-indigo-50 {
 }
 
 /* Stock level badges */
-.stock-badge-ok { background: #ecfdf5; color: #059669; }
-.stock-badge-low { background: #fef3c7; color: #d97706; }
-.stock-badge-out { background: #fef2f2; color: #dc2626; }
+.stock-badge-ok { background: #ecfdf5; color: #059669; font-weight: 700; letter-spacing: 0.02em; }
+.stock-badge-low { background: #fef3c7; color: #d97706; font-weight: 700; letter-spacing: 0.02em; }
+.stock-badge-out { background: #fef2f2; color: #dc2626; font-weight: 700; letter-spacing: 0.02em; }
 
 /* Inventory dashboard category chips */
 .inv-cat-chip {
@@ -312,4 +347,8 @@ nav button.bg-indigo-50 {
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .fund-card:hover, .bg-white.rounded-xl:hover { transform: none; }
+  nav button::after { display: none; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .grid.grid-cols-2.lg\:grid-cols-6 { grid-template-columns: repeat(3, 1fr) !important; }
 }

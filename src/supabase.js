@@ -364,7 +364,8 @@ export async function getActivityLog(limit) {
 
 // ===== INVENTORY CATEGORIES =====
 export async function getInventoryCategories() {
-  const { data } = await supabase.from('inventory_categories').select('*').order('name');
+  const { data, error } = await supabase.from('inventory_categories').select('*').order('name');
+  if (error) console.error('getInventoryCategories error:', error.message, error.code);
   return data || [];
 }
 export async function addInventoryCategory(cat) {
@@ -395,7 +396,8 @@ export async function addInventoryProduct(p) {
     category_name: p.categoryName || '', unit: p.unit || 'pcs',
     buying_price: p.buyingPrice || 0, selling_price: p.sellingPrice || 0,
     min_stock: p.minStock || 0, current_stock: p.currentStock || 0,
-    description: p.description || '', linked_product_id: p.linkedProductId || null,
+    description: p.description || '', hsn_code: p.hsnCode || '',
+    tax_percent: p.taxPercent || 18, product_type: p.productType || 'Product',
     is_active: true
   }).select().single();
   if (error) console.error('Inv product error:', error);
@@ -407,7 +409,8 @@ export async function updateInventoryProduct(id, p) {
     category_name: p.categoryName || '', unit: p.unit || 'pcs',
     buying_price: p.buyingPrice || 0, selling_price: p.sellingPrice || 0,
     min_stock: p.minStock || 0, description: p.description || '',
-    linked_product_id: p.linkedProductId || null,
+    hsn_code: p.hsnCode || '', tax_percent: p.taxPercent || 18,
+    product_type: p.productType || 'Product',
     updated_at: new Date().toISOString()
   }).eq('id', id);
 }
