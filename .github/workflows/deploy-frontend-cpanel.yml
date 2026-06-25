@@ -1,0 +1,43 @@
+name: Deploy frontend to cPanel
+
+# Builds the React app and uploads the static build to cPanel (public_html) over FTPS.
+# Requires these repository secrets (Settings -> Secrets and variables -> Actions):
+#   CPANEL_FTP_SERVER    e.g. ftp.yourdomain.com   (or the server hostname/IP)
+#   CPANEL_FTP_USERNAME  your cPanel/FTP username
+#   CPANEL_FTP_PASSWORD  your cPanel/FTP password
+# The Java backend is NOT deployed here (cPanel shared hosting can't run it) — see DEPLOYMENT.md.
+
+on:
+  push:
+    branches: [ feat/project-fund-source ]
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to cPanel via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./dist/
+          # Must end with a slash. Change to e.g. public_html/app/ to deploy into a subfolder.
+          server-dir: public_html/
