@@ -74,6 +74,20 @@ export async function addIncomeSource(name) {
   return data;
 }
 
+// ===== EXPENSE CATEGORIES (admin-managed debit categories) =====
+export async function getExpenseCategories() {
+  const { data } = await supabase.from('expense_categories').select('*').order('name');
+  return data || [];
+}
+export async function addExpenseCategory(name) {
+  const { data, error } = await supabase.from('expense_categories').insert({ name }).select().single();
+  if (error) console.error('Expense category error:', error);
+  return data;
+}
+export async function deleteExpenseCategory(id) {
+  await supabase.from('expense_categories').delete().eq('id', id);
+}
+
 // ===== TRANSACTIONS =====
 export async function getTransactions() {
   const { data } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
@@ -96,6 +110,28 @@ export async function settleTransaction(id) {
 }
 export async function updateTransactionsPerson(oldName, newName) {
   await supabase.from('transactions').update({ person: newName }).eq('person', oldName);
+}
+// Edit ONLY metadata/tags of a transaction — never amount/kind/fund_source/balance.
+export async function updateTransactionMeta(id, t) {
+  await supabase.from('transactions').update({
+    date: t.date, person: t.person, category: t.category || '',
+    project_code: pc(t.project), note: t.note || ''
+  }).eq('id', id);
+}
+// Normalize a transaction's fund source (used by reconciliation)
+export async function updateTransactionFundSource(id, fundSource) {
+  await supabase.from('transactions').update({ fund_source: fundSource }).eq('id', id);
+}
+// Insert many transactions at once (bank statement import)
+export async function addTransactionsBulk(rows) {
+  const payload = rows.map(t => ({
+    date: t.date, project_code: pc(t.project), person: t.person, amount: t.amount,
+    kind: t.kind, category: t.category || '', note: t.note || '',
+    settled: false, is_reversal: false, fund_source: t.fundSource || 'available'
+  }));
+  const { data, error } = await supabase.from('transactions').insert(payload).select();
+  if (error) console.error('Bulk transaction error:', error);
+  return data || [];
 }
 
 // ===== FILE UPLOAD =====
@@ -443,6 +479,47 @@ export async function addInventoryTransaction(t) {
     notes: t.notes || '', performed_by: t.performedBy || ''
   }).select().single();
   if (error) console.error('Inv transaction error:', error);
+  return data;
+}
+
+// ===== RESOURCES (HR / Payroll) =====
+export async function getResources() {
+  const { data } = await supabase.from('resources').select('*').order('created_at');
+  return data || [];
+}
+export async function addResource(r) {
+  const { data, error } = await supabase.from('resources').insert({
+    name: r.name, role: r.role || '', pay_type: r.payType,
+    pay_amount: r.payAmount || 0, commission_percent: r.commissionPercent || 0,
+    job_label: r.jobLabel || 'per job', is_active: true
+  }).select().single();
+  if (error) { console.error('Resource error:', error.message, error.code); return { error }; }
+  return { data };
+}
+export async function updateResource(id, r) {
+  await supabase.from('resources').update({
+    name: r.name, role: r.role || '', pay_type: r.payType,
+    pay_amount: r.payAmount || 0, commission_percent: r.commissionPercent || 0,
+    job_label: r.jobLabel || 'per job', updated_at: new Date().toISOString()
+  }).eq('id', id);
+}
+export async function deleteResource(id) {
+  await supabase.from('resources').update({ is_active: false, updated_at: new Date().toISOString() }).eq('id', id);
+}
+
+// ===== SALARY PAYMENTS =====
+export async function getSalaryPayments() {
+  const { data } = await supabase.from('salary_payments').select('*').order('created_at', { ascending: false });
+  return data || [];
+}
+export async function addSalaryPayment(p) {
+  const { data, error } = await supabase.from('salary_payments').insert({
+    resource_id: p.resourceId, resource_name: p.resourceName,
+    pay_type: p.payType, amount: p.amount, units: p.units || null,
+    fund_source: p.fundSource || 'available', fund_label: p.fundLabel || 'Available',
+    period: p.period || '', note: p.note || '', paid_by: p.paidBy || ''
+  }).select().single();
+  if (error) console.error('Salary payment error:', error);
   return data;
 }
 

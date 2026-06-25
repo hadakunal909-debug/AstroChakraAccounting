@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* =============================================
-   ASTROCHAKRA — LIGHT THEME WITH GOLDEN ACCENTS
+   ASTROCHAKRA — VIBRANT LIGHT THEME
    Logo-inspired: golden orbits, planetary colors
    ============================================= */
 
@@ -33,7 +33,7 @@ html {
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #f8f9fc;
+  background: #f0f2f8;
   min-height: 100vh;
   color: #1e293b;
   line-height: 1.6;
@@ -41,15 +41,15 @@ body {
 }
 
 ::selection {
-  background: rgba(212, 168, 67, 0.2);
+  background: rgba(212, 168, 67, 0.3);
   color: #1e293b;
 }
 
 /* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(212, 168, 67, 0.25); border-radius: 100px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(212, 168, 67, 0.4); }
+::-webkit-scrollbar-thumb { background: rgba(212, 168, 67, 0.35); border-radius: 100px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(212, 168, 67, 0.5); }
 
 /* ===== ANIMATIONS ===== */
 @keyframes fadeInUp {
@@ -101,14 +101,14 @@ body {
 .stagger-children > *:nth-child(6) { animation-delay: 300ms; }
 
 /* ==================================
-   HEADER — White glass with gold bar
+   HEADER — Solid white with gold bar
    ================================== */
 .sticky.top-0.z-30 {
-  background: rgba(255, 255, 255, 0.88) !important;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(212, 168, 67, 0.12) !important;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(212, 168, 67, 0.05);
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 2px solid rgba(212, 168, 67, 0.2) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 /* ===== PAGE CONTENT TRANSITIONS ===== */
@@ -117,50 +117,100 @@ main > .space-y-6 { animation: pageEnter 0.25s ease-out both; }
 /* ===== CARD ENHANCEMENTS ===== */
 .bg-white.rounded-xl,
 .bg-white.rounded-2xl {
-  background: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+  background: #ffffff !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
   transition: var(--transition);
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
 .bg-white.rounded-xl:hover,
 .bg-white.rounded-2xl:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.06);
+  transform: translateY(-2px);
 }
 
 .bg-white.rounded-xl:has(table):hover {
   transform: none;
 }
 
-/* ===== FUND CARDS WITH ACCENTS ===== */
+/* =============================================
+   FUND CARDS — Colored backgrounds, not just white
+   ============================================= */
 .fund-card {
   position: relative;
   overflow: hidden;
-  background: #fff !important;
   transition: var(--transition);
+  border: none !important;
 }
 
 .fund-card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 3px;
-  opacity: 0.85;
+  height: 4px;
+}
+
+.fund-card::after {
+  content: '';
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  opacity: 0.08;
 }
 
 .fund-card:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important;
-  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12) !important;
+  transform: translateY(-4px);
 }
 
+/* Available — green tinted */
+.fund-card.fc-available {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+  border-left: 4px solid #10b981 !important;
+}
 .fund-card.fc-available::before { background: linear-gradient(90deg, #10b981, #34d399); }
+.fund-card.fc-available::after { background: #10b981; }
+
+/* Reserve — gold tinted */
+.fund-card.fc-reserve {
+  background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%) !important;
+  border-left: 4px solid var(--gold) !important;
+}
 .fund-card.fc-reserve::before { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+.fund-card.fc-reserve::after { background: var(--gold); }
+
+/* Allocated — amber tinted */
+.fund-card.fc-allocated {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+  border-left: 4px solid #f59e0b !important;
+}
 .fund-card.fc-allocated::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.fund-card.fc-allocated::after { background: #f59e0b; }
+
+/* Balance — purple tinted */
+.fund-card.fc-balance {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%) !important;
+  border-left: 4px solid var(--planet-purple) !important;
+}
 .fund-card.fc-balance::before { background: linear-gradient(90deg, var(--planet-purple), #a78bfa); }
-.fund-card.fc-income::before { background: linear-gradient(90deg, #10b981, #6ee7b7); }
+.fund-card.fc-balance::after { background: var(--planet-purple); }
+
+/* Income — green tinted */
+.fund-card.fc-income {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+  border-left: 4px solid #059669 !important;
+}
+.fund-card.fc-income::before { background: linear-gradient(90deg, #059669, #34d399); }
+.fund-card.fc-income::after { background: #059669; }
+
+/* Expense — red tinted */
+.fund-card.fc-expense {
+  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%) !important;
+  border-left: 4px solid #ef4444 !important;
+}
 .fund-card.fc-expense::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+.fund-card.fc-expense::after { background: #ef4444; }
 
 /* ===== BUTTONS ===== */
 button { transition: var(--transition); }
@@ -168,38 +218,42 @@ button:active:not(:disabled) { transform: scale(0.97) !important; }
 
 .bg-indigo-600 {
   background: linear-gradient(135deg, var(--gold), var(--gold-dim)) !important;
-  box-shadow: 0 2px 10px rgba(212, 168, 67, 0.3);
+  box-shadow: 0 3px 12px rgba(212, 168, 67, 0.35);
 }
 .bg-indigo-600:hover {
   background: linear-gradient(135deg, var(--gold-light), var(--gold)) !important;
-  box-shadow: 0 4px 18px rgba(212, 168, 67, 0.4);
+  box-shadow: 0 6px 20px rgba(212, 168, 67, 0.45);
   transform: translateY(-1px);
 }
 
 .bg-violet-600 {
   background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 3px 12px rgba(124, 58, 237, 0.35);
 }
 .bg-violet-600:hover {
   background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
-  box-shadow: 0 4px 18px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);
   transform: translateY(-1px);
 }
 
 .bg-emerald-600 {
   background: linear-gradient(135deg, #059669, #047857) !important;
-  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.3);
+  box-shadow: 0 3px 12px rgba(5, 150, 105, 0.35);
+}
+
+.bg-red-500 {
+  box-shadow: 0 3px 12px rgba(239, 68, 68, 0.3);
 }
 
 .text-xs.font-medium.rounded-lg { transition: var(--transition); }
 .text-xs.font-medium.rounded-lg:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
 }
 
 /* ===== INPUT FOCUS RING ===== */
 input:focus, select:focus, textarea:focus {
-  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.12) !important;
+  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.18) !important;
   border-color: var(--gold) !important;
 }
 
@@ -211,7 +265,7 @@ input:focus, select:focus, textarea:focus {
 }
 .fixed.inset-0.z-50 > div {
   animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  border: 1px solid rgba(212, 168, 67, 0.1);
+  border: 1px solid rgba(212, 168, 67, 0.15);
 }
 
 /* ===== FORM SECTION GROUPS ===== */
@@ -222,9 +276,16 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-/* ===== TABLE ROW HOVER ===== */
+/* ===== TABLE ===== */
+table thead tr {
+  background: #f8fafc;
+}
+table thead th {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
 table tbody tr { transition: all 0.15s ease; border-left: 3px solid transparent; }
-table tbody tr:hover { background-color: rgba(212, 168, 67, 0.04) !important; border-left-color: var(--gold); }
+table tbody tr:hover { background-color: rgba(212, 168, 67, 0.08) !important; border-left-color: var(--gold); }
 
 /* ===== NAV ===== */
 nav { position: relative; }
@@ -233,7 +294,7 @@ nav > button::after, nav > div > button::after {
   content: '';
   position: absolute;
   bottom: -2px; left: 25%; right: 25%;
-  height: 2px;
+  height: 3px;
   background: var(--gold);
   border-radius: 2px;
   transform: scaleX(0);
@@ -243,8 +304,9 @@ nav > button::after, nav > div > button::after {
 
 .bg-indigo-50.text-indigo-700,
 nav button.bg-indigo-50 {
-  background: rgba(212, 168, 67, 0.08) !important;
+  background: rgba(212, 168, 67, 0.12) !important;
   color: var(--gold-dim) !important;
+  font-weight: 600;
 }
 nav button.bg-indigo-50::after,
 nav .bg-indigo-50::after {
@@ -253,7 +315,7 @@ nav .bg-indigo-50::after {
 
 /* ===== LOADING BAR ===== */
 .h-1.bg-indigo-200 {
-  background: rgba(212, 168, 67, 0.15) !important;
+  background: rgba(212, 168, 67, 0.2) !important;
 }
 .h-1.bg-indigo-200 .bg-indigo-600 {
   background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold)) !important;
@@ -275,13 +337,31 @@ nav .bg-indigo-50::after {
   box-shadow: 0 10px 40px rgba(0,0,0,0.07), 0 0 30px rgba(212, 168, 67, 0.08) !important;
 }
 
-/* ===== CHARTS ===== */
+/* =============================================
+   CHARTS — Bold, vibrant, large
+   ============================================= */
 .recharts-cartesian-grid-horizontal line,
-.recharts-cartesian-grid-vertical line { stroke: #f1f5f9; }
-.recharts-tooltip-wrapper { filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1)); }
+.recharts-cartesian-grid-vertical line { stroke: #e2e8f0; }
+.recharts-tooltip-wrapper { filter: drop-shadow(0 8px 24px rgba(0,0,0,0.15)) !important; }
+.recharts-default-tooltip {
+  border-radius: 12px !important;
+  border: 1px solid rgba(212,168,67,0.15) !important;
+  padding: 12px 16px !important;
+  background: #fff !important;
+}
+.recharts-bar-rectangle rect { rx: 6; ry: 6; }
+.recharts-pie-label-text { font-size: 11px; font-weight: 700; fill: #334155; }
+.recharts-legend-wrapper { font-size: 13px !important; margin-top: 8px !important; }
+.recharts-legend-item-text { color: #334155 !important; font-weight: 600; }
+.recharts-sector { transition: all 0.2s ease; filter: saturate(1.1); }
+.recharts-sector:hover { opacity: 0.85; filter: saturate(1.3) brightness(1.05); }
+.recharts-bar-rectangle { filter: saturate(1.15); }
+
+/* ===== QUERY BUILDER ===== */
+.qb-keyword { font-family: 'Fira Code', 'Cascadia Code', monospace; text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* ===== PROGRESS BAR ===== */
-.h-2.rounded-full { transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+.h-2.rounded-full, .h-3.rounded-full { transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
 
 /* ===== STATUS BADGE ===== */
 .rounded-full.capitalize { transition: var(--transition); letter-spacing: 0.02em; }
@@ -291,11 +371,40 @@ nav .bg-indigo-50::after {
 .border-l-violet-400 { border-left-color: var(--planet-purple) !important; }
 
 /* ===== INVENTORY FUND CARDS ===== */
+.fund-card.fc-inv-total {
+  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%) !important;
+  border-left: 4px solid #14b8a6 !important;
+}
 .fund-card.fc-inv-total::before { background: linear-gradient(90deg, #14b8a6, #2dd4bf); }
+
+.fund-card.fc-inv-value {
+  background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%) !important;
+  border-left: 4px solid var(--gold) !important;
+}
 .fund-card.fc-inv-value::before { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+
+.fund-card.fc-inv-low {
+  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%) !important;
+  border-left: 4px solid #ef4444 !important;
+}
 .fund-card.fc-inv-low::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+.fund-card.fc-inv-categories {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%) !important;
+  border-left: 4px solid var(--planet-purple) !important;
+}
 .fund-card.fc-inv-categories::before { background: linear-gradient(90deg, var(--planet-purple), #a78bfa); }
+
+.fund-card.fc-inv-movements {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+  border-left: 4px solid var(--planet-blue) !important;
+}
 .fund-card.fc-inv-movements::before { background: linear-gradient(90deg, var(--planet-blue), #60a5fa); }
+
+.fund-card.fc-inv-invested {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+  border-left: 4px solid #059669 !important;
+}
 .fund-card.fc-inv-invested::before { background: linear-gradient(90deg, #059669, #34d399); }
 
 /* Low stock pulse animation */
@@ -309,9 +418,9 @@ nav .bg-indigo-50::after {
 }
 
 /* Stock level badges */
-.stock-badge-ok { background: #ecfdf5; color: #059669; font-weight: 700; letter-spacing: 0.02em; }
+.stock-badge-ok { background: #dcfce7; color: #059669; font-weight: 700; letter-spacing: 0.02em; }
 .stock-badge-low { background: #fef3c7; color: #d97706; font-weight: 700; letter-spacing: 0.02em; }
-.stock-badge-out { background: #fef2f2; color: #dc2626; font-weight: 700; letter-spacing: 0.02em; }
+.stock-badge-out { background: #fecaca; color: #dc2626; font-weight: 700; letter-spacing: 0.02em; }
 
 /* Inventory dashboard category chips */
 .inv-cat-chip {
@@ -332,9 +441,9 @@ nav .bg-indigo-50::after {
 
 /* Inventory progress bars */
 .inv-stock-bar {
-  height: 6px;
+  height: 8px;
   border-radius: 100px;
-  background: #f1f5f9;
+  background: #e2e8f0;
   overflow: hidden;
   transition: var(--transition);
 }

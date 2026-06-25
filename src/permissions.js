@@ -1,7 +1,7 @@
 const PERMISSIONS = {
   admin: {
     viewDashboard: true, editDashboard: true, viewFullAnalytics: true,
-    addTransaction: true, settleTransaction: true, viewAllTransactions: true, attachBills: true,
+    addTransaction: true, settleTransaction: true, editTransaction: true, reconcileBank: true, viewAllTransactions: true, attachBills: true,
     createProject: true, editProject: true, deleteProject: true,
     addPeople: true, editPeople: true, deletePeople: true,
     createInvoice: true, editInvoice: false, deleteInvoice: true, markInvoicePaid: true, downloadInvoicePDF: true,
@@ -16,7 +16,7 @@ const PERMISSIONS = {
   },
   regular: {
     viewDashboard: true, editDashboard: false, viewFullAnalytics: false,
-    addTransaction: true, settleTransaction: false, viewAllTransactions: false, attachBills: false,
+    addTransaction: true, settleTransaction: false, editTransaction: false, reconcileBank: false, viewAllTransactions: false, attachBills: false,
     createProject: false, editProject: false, deleteProject: false,
     addPeople: false, editPeople: false, deletePeople: false,
     createInvoice: false, editInvoice: false, deleteInvoice: false, markInvoicePaid: false, downloadInvoicePDF: true,
