@@ -653,4 +653,236 @@ router.post('/inventory/stock-movement', h(async (req, res) => {
   res.status(201).json(it);
 }));
 
+// ===== INVENTORY: plain transaction insert (non-atomic) ==================
+// Mirrors supabase.addInventoryTransaction — used by the current browser-side
+// multi-call stock flow. The atomic /inventory/stock-movement supersedes it.
+router.post('/inventory/transactions', h(async (req, res) => {
+  const t = req.body || {};
+  const { rows } = await q(
+    `insert into inventory_transactions
+       (product_id, product_name, type, quantity, unit_cost, total_cost, fund_source, fund_label, notes, performed_by)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning *`,
+    [t.product_id, t.product_name || '', t.type || 'stock_in', num(t.quantity),
+     num(t.unit_cost), num(t.total_cost), t.fund_source || '', t.fund_label || '',
+     t.notes || '', t.performed_by || '']
+  );
+  res.status(201).json(rows[0]);
+}));
+
+// ===== PRODUCTS / PRODUCT TYPES (legacy, for document item search) =========
+function productParams(b) {
+  return [
+    b.name, b.product_type || 'Service', b.category || '', b.unit || 'pcs',
+    num(b.price), b.hsn_code || '', b.tax_percent != null ? num(b.tax_percent) : 18,
+    b.description || '',
+  ];
+}
+router.get('/products', h(async (_req, res) => {
+  const { rows } = await q('select * from products order by created_at desc');
+  res.json(rows);
+}));
+router.post('/products', h(async (req, res) => {
+  const { rows } = await q(
+    `insert into products (name, product_type, category, unit, price, hsn_code, tax_percent, description)
+     values ($1,$2,$3,$4,$5,$6,$7,$8) returning *`,
+    productParams(req.body || {})
+  );
+  res.status(201).json(rows[0]);
+}));
+router.put('/products/:id', h(async (req, res) => {
+  await q(
+    `update products set name=$1, product_type=$2, category=$3, unit=$4, price=$5, hsn_code=$6, tax_percent=$7, description=$8, updated_at=now() where id=$9`,
+    [...productParams(req.body || {}), req.params.id]
+  );
+  res.status(204).end();
+}));
+router.delete('/products/:id', h(async (req, res) => {
+  await q('delete from products where id = $1', [req.params.id]);
+  res.status(204).end();
+}));
+router.get('/product-types', h(async (_req, res) => {
+  const { rows } = await q('select * from product_types order by name');
+  res.json(rows);
+}));
+router.post('/product-types', h(async (req, res) => {
+  const { rows } = await q('insert into product_types (name) values ($1) returning *', [(req.body || {}).name]);
+  res.status(201).json(rows[0]);
+}));
+
+// ===== DOCUMENTS: line-item helpers =======================================
+// table/fkCol are caller-controlled constants (never user input) — safe to inline.
+async function insertItems(c, table, fkCol, parentId, items) {
+  for (const it of items || []) {
+    await c.query(
+      `insert into ${table} (${fkCol}, description, hsn, qty, rate, gst_percent) values ($1,$2,$3,$4,$5,$6)`,
+      [parentId, it.description || 'Item', it.hsn || '', num(it.qty), num(it.rate), it.gst_percent != null ? num(it.gst_percent) : 18]
+    );
+  }
+}
+
+// ===== REQUISITIONS =======================================================
+router.get('/requisitions', h(async (_req, res) => {
+  const { rows } = await q('select * from requisitions order by created_at desc');
+  res.json(rows);
+}));
+router.post('/requisitions', h(async (req, res) => {
+  const r = (req.body || {}).requisition || {};
+  const items = (req.body || {}).items || [];
+  const out = await withTx(async (c) => {
+    const { rows } = await c.query(
+      `insert into requisitions
+         (number, date, requested_by, vendor_name, vendor_email, vendor_phone, vendor_address, vendor_gstin, gst_type, project_code, subtotal, tax, total, notes, status)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'draft') returning *`,
+      [r.number, r.date, r.requested_by, r.vendor_name || '', r.vendor_email || '', r.vendor_phone || '',
+       r.vendor_address || '', r.vendor_gstin || '', r.gst_type || 'intra', pc(r.project_code),
+       num(r.subtotal), num(r.tax), num(r.total), r.notes || '']
+    );
+    await insertItems(c, 'requisition_items', 'requisition_id', rows[0].id, items);
+    return rows[0];
+  });
+  res.status(201).json(out);
+}));
+router.get('/requisitions/:id/items', h(async (req, res) => {
+  const { rows } = await q('select * from requisition_items where requisition_id = $1', [req.params.id]);
+  res.json(rows);
+}));
+router.put('/requisitions/:id/status', h(async (req, res) => {
+  const b = req.body || {};
+  if (b.approved_by) {
+    await q('update requisitions set status=$1, approved_by=$2, approved_at=now() where id=$3', [b.status, b.approved_by, req.params.id]);
+  } else {
+    await q('update requisitions set status=$1 where id=$2', [b.status, req.params.id]);
+  }
+  res.status(204).end();
+}));
+router.delete('/requisitions/:id', h(async (req, res) => {
+  await withTx(async (c) => {
+    await c.query('delete from requisition_items where requisition_id = $1', [req.params.id]);
+    await c.query('delete from requisitions where id = $1', [req.params.id]);
+  });
+  res.status(204).end();
+}));
+
+// ===== PURCHASE ORDERS ====================================================
+router.get('/purchase-orders', h(async (_req, res) => {
+  const { rows } = await q('select * from purchase_orders order by created_at desc');
+  res.json(rows);
+}));
+router.post('/purchase-orders', h(async (req, res) => {
+  const po = (req.body || {}).purchase_order || {};
+  const items = (req.body || {}).items || [];
+  const out = await withTx(async (c) => {
+    const { rows } = await c.query(
+      `insert into purchase_orders
+         (number, date, delivery_date, vendor_name, vendor_email, vendor_phone, vendor_address, vendor_gstin, gst_type, project_code, subtotal, tax, total, notes, status, requisition_id)
+       values ($1, coalesce($2::date, current_date), $3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'draft',$15) returning *`,
+      [po.number, po.date || null, po.delivery_date || null, po.vendor_name || '', po.vendor_email || '',
+       po.vendor_phone || '', po.vendor_address || '', po.vendor_gstin || '', po.gst_type || 'intra',
+       pc(po.project_code), num(po.subtotal), num(po.tax), num(po.total), po.notes || '', po.requisition_id || null]
+    );
+    await insertItems(c, 'po_items', 'po_id', rows[0].id, items);
+    return rows[0];
+  });
+  res.status(201).json(out);
+}));
+router.get('/purchase-orders/:id/items', h(async (req, res) => {
+  const { rows } = await q('select * from po_items where po_id = $1', [req.params.id]);
+  res.json(rows);
+}));
+router.put('/purchase-orders/:id/status', h(async (req, res) => {
+  await q('update purchase_orders set status=$1 where id=$2', [(req.body || {}).status, req.params.id]);
+  res.status(204).end();
+}));
+
+// ===== INVOICES ===========================================================
+router.get('/invoices', h(async (_req, res) => {
+  const { rows } = await q('select * from invoices order by created_at desc');
+  res.json(rows);
+}));
+router.post('/invoices', h(async (req, res) => {
+  const inv = (req.body || {}).invoice || {};
+  const items = (req.body || {}).items || [];
+  const out = await withTx(async (c) => {
+    const { rows } = await c.query(
+      `insert into invoices
+         (number, date, due_date, client_name, client_email, client_phone, client_address, client_gstin, gst_type, project_code, subtotal, tax, total, notes, status, po_id, locked, quote_id, source, editable)
+       values ($1, coalesce($2::date, current_date), $3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) returning *`,
+      [inv.number, inv.date || null, inv.due_date || null, inv.client_name || '', inv.client_email || '',
+       inv.client_phone || '', inv.client_address || '', inv.client_gstin || '', inv.gst_type || 'intra',
+       pc(inv.project_code), num(inv.subtotal), num(inv.tax), num(inv.total), inv.notes || '',
+       inv.status || 'unpaid', inv.po_id || null, inv.locked === true, inv.quote_id || null,
+       inv.source || 'b2b', inv.editable === true]
+    );
+    await insertItems(c, 'invoice_items', 'invoice_id', rows[0].id, items);
+    return rows[0];
+  });
+  res.status(201).json(out);
+}));
+router.get('/invoices/:id/items', h(async (req, res) => {
+  const { rows } = await q('select * from invoice_items where invoice_id = $1', [req.params.id]);
+  res.json(rows);
+}));
+router.put('/invoices/:id/paid', h(async (req, res) => {
+  await q("update invoices set status='paid', locked=true, editable=false where id=$1", [req.params.id]);
+  res.status(204).end();
+}));
+router.put('/invoices/:id', h(async (req, res) => {
+  const inv = (req.body || {}).invoice || {};
+  const items = (req.body || {}).items; // null/undefined => leave items untouched
+  await withTx(async (c) => {
+    await c.query(
+      `update invoices set
+         date=$1, due_date=$2, client_name=$3, client_email=$4, client_phone=$5, client_address=$6, client_gstin=$7,
+         gst_type=$8, project_code=$9, subtotal=$10, tax=$11, total=$12, notes=$13, updated_at=now()
+       where id=$14`,
+      [inv.date, inv.due_date || null, inv.client_name || '', inv.client_email || '', inv.client_phone || '',
+       inv.client_address || '', inv.client_gstin || '', inv.gst_type || 'intra', pc(inv.project_code),
+       num(inv.subtotal), num(inv.tax), num(inv.total), inv.notes || '', req.params.id]
+    );
+    if (items != null) {
+      await c.query('delete from invoice_items where invoice_id = $1', [req.params.id]);
+      await insertItems(c, 'invoice_items', 'invoice_id', req.params.id, items);
+    }
+  });
+  res.status(204).end();
+}));
+router.delete('/invoices/:id', h(async (req, res) => {
+  await withTx(async (c) => {
+    await c.query('delete from invoice_items where invoice_id = $1', [req.params.id]);
+    await c.query('delete from invoices where id = $1', [req.params.id]);
+  });
+  res.status(204).end();
+}));
+
+// ===== QUOTES =============================================================
+router.get('/quotes', h(async (_req, res) => {
+  const { rows } = await q('select * from quotes order by created_at desc');
+  res.json(rows);
+}));
+router.post('/quotes', h(async (req, res) => {
+  const qt = (req.body || {}).quote || {};
+  const items = (req.body || {}).items || [];
+  const out = await withTx(async (c) => {
+    const { rows } = await c.query(
+      `insert into quotes
+         (number, date, valid_until, client_name, client_email, client_phone, client_address, client_gstin, gst_type, project_code, subtotal, tax, total, notes, terms, status)
+       values ($1, coalesce($2::date, current_date), $3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'draft') returning *`,
+      [qt.number, qt.date || null, qt.valid_until || null, qt.client_name || '', qt.client_email || '',
+       qt.client_phone || '', qt.client_address || '', qt.client_gstin || '', qt.gst_type || 'intra',
+       pc(qt.project_code), num(qt.subtotal), num(qt.tax), num(qt.total), qt.notes || '', qt.terms || '']
+    );
+    await insertItems(c, 'quote_items', 'quote_id', rows[0].id, items);
+    return rows[0];
+  });
+  res.status(201).json(out);
+}));
+router.get('/quotes/:id/items', h(async (req, res) => {
+  const { rows } = await q('select * from quote_items where quote_id = $1', [req.params.id]);
+  res.json(rows);
+}));
+router.put('/quotes/:id/status', h(async (req, res) => {
+  await q('update quotes set status=$1 where id=$2', [(req.body || {}).status, req.params.id]);
+  res.status(204).end();
+}));
+
 module.exports = router;

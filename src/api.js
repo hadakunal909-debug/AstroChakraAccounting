@@ -321,6 +321,181 @@ export async function stockMovement(m) {
   });
 }
 
+// Non-atomic inventory transaction insert (mirrors supabase.addInventoryTransaction).
+// The atomic stockMovement() supersedes the browser-side multi-call flow.
+export async function addInventoryTransaction(t) {
+  return req('/inventory/transactions', {
+    method: 'POST',
+    body: {
+      product_id: t.productId, product_name: t.productName || '', type: t.type || 'stock_in',
+      quantity: t.quantity, unit_cost: t.unitCost || 0, total_cost: t.totalCost || 0,
+      fund_source: t.fundSource || '', fund_label: t.fundLabel || '',
+      notes: t.notes || '', performed_by: t.performedBy || '',
+    },
+  });
+}
+
+// ===== PRODUCTS / PRODUCT TYPES (legacy — document item search) =====
+function productBody(p) {
+  return {
+    name: p.name, product_type: p.productType, category: p.category || '', unit: p.unit || 'pcs',
+    price: p.price || 0, hsn_code: p.hsnCode || '', tax_percent: p.taxPercent || 18, description: p.description || '',
+  };
+}
+export async function getProducts() {
+  return req('/products');
+}
+export async function addProduct(p) {
+  return req('/products', { method: 'POST', body: productBody(p) });
+}
+export async function updateProduct(id, p) {
+  return req('/products/' + id, { method: 'PUT', body: productBody(p) });
+}
+export async function deleteProduct(id) {
+  return req('/products/' + id, { method: 'DELETE' });
+}
+export async function getProductTypes() {
+  return req('/product-types');
+}
+export async function addProductType(name) {
+  return req('/product-types', { method: 'POST', body: { name } });
+}
+
+// ===== DOCUMENTS (quotes / requisitions / POs / invoices) =====
+// App.jsx passes objects with nested vendor/client and items [{desc,hsn,qty,rate,gst}];
+// here we flatten to the snake_case shape the backend expects.
+const mapItems = (items) => (items || []).map((it) => ({
+  description: it.desc || 'Item', hsn: it.hsn || '', qty: it.qty, rate: it.rate, gst_percent: it.gst,
+}));
+
+// --- requisitions ---
+export async function getRequisitions() {
+  return req('/requisitions');
+}
+export async function addRequisition(r, items) {
+  return req('/requisitions', {
+    method: 'POST',
+    body: {
+      requisition: {
+        number: r.number, date: r.date, requested_by: r.requestedBy,
+        vendor_name: r.vendor.name, vendor_email: r.vendor.email || '', vendor_phone: r.vendor.phone || '',
+        vendor_address: r.vendor.address || '', vendor_gstin: r.vendor.gstin || '',
+        gst_type: r.type || 'intra', project_code: r.project || null,
+        subtotal: r.subtotal, tax: r.tax, total: r.total, notes: r.notes || '',
+      },
+      items: mapItems(items),
+    },
+  });
+}
+export async function getRequisitionItems(reqId) {
+  return req('/requisitions/' + reqId + '/items');
+}
+export async function updateRequisitionStatus(id, status, approvedBy) {
+  return req('/requisitions/' + id + '/status', { method: 'PUT', body: { status, approved_by: approvedBy || null } });
+}
+export async function deleteRequisition(id) {
+  return req('/requisitions/' + id, { method: 'DELETE' });
+}
+
+// --- purchase orders ---
+export async function getPurchaseOrders() {
+  return req('/purchase-orders');
+}
+export async function addPurchaseOrder(po, items) {
+  return req('/purchase-orders', {
+    method: 'POST',
+    body: {
+      purchase_order: {
+        number: po.number, date: po.date, delivery_date: po.deliveryDate || null,
+        vendor_name: po.vendor.name, vendor_email: po.vendor.email || '', vendor_phone: po.vendor.phone || '',
+        vendor_address: po.vendor.address || '', vendor_gstin: po.vendor.gstin || '',
+        gst_type: po.type || 'intra', project_code: po.project || null,
+        subtotal: po.subtotal, tax: po.tax, total: po.total, notes: po.notes || '',
+        requisition_id: po.requisitionId || null,
+      },
+      items: mapItems(items),
+    },
+  });
+}
+export async function getPOItems(poId) {
+  return req('/purchase-orders/' + poId + '/items');
+}
+export async function updatePOStatus(id, status) {
+  return req('/purchase-orders/' + id + '/status', { method: 'PUT', body: { status } });
+}
+
+// --- invoices ---
+export async function getInvoices() {
+  return req('/invoices');
+}
+export async function addInvoice(inv, items) {
+  return req('/invoices', {
+    method: 'POST',
+    body: {
+      invoice: {
+        number: inv.number, date: inv.date, due_date: inv.dueDate || null,
+        client_name: inv.client.name, client_email: inv.client.email || '', client_phone: inv.client.phone || '',
+        client_address: inv.client.address || '', client_gstin: inv.client.gstin || '',
+        gst_type: inv.type || 'intra', project_code: inv.project || null,
+        subtotal: inv.subtotal, tax: inv.tax, total: inv.total, notes: inv.notes || '',
+        status: inv.status || 'unpaid', po_id: inv.poId || null, locked: inv.locked || false,
+        quote_id: inv.quoteId || null, source: inv.source || 'b2b', editable: inv.editable || false,
+      },
+      items: mapItems(items),
+    },
+  });
+}
+export async function getInvoiceItems(invoiceId) {
+  return req('/invoices/' + invoiceId + '/items');
+}
+export async function markInvoicePaid(id) {
+  return req('/invoices/' + id + '/paid', { method: 'PUT' });
+}
+export async function deleteInvoice(id) {
+  return req('/invoices/' + id, { method: 'DELETE' });
+}
+export async function updateInvoice(id, inv, items) {
+  return req('/invoices/' + id, {
+    method: 'PUT',
+    body: {
+      invoice: {
+        date: inv.date, due_date: inv.dueDate || null,
+        client_name: inv.client.name, client_email: inv.client.email || '', client_phone: inv.client.phone || '',
+        client_address: inv.client.address || '', client_gstin: inv.client.gstin || '',
+        gst_type: inv.type || 'intra', project_code: inv.project || null,
+        subtotal: inv.subtotal, tax: inv.tax, total: inv.total, notes: inv.notes || '',
+      },
+      items: items ? mapItems(items) : null,
+    },
+  });
+}
+
+// --- quotes ---
+export async function getQuotes() {
+  return req('/quotes');
+}
+export async function addQuote(qt, items) {
+  return req('/quotes', {
+    method: 'POST',
+    body: {
+      quote: {
+        number: qt.number, date: qt.date, valid_until: qt.validUntil || null,
+        client_name: qt.client.name, client_email: qt.client.email || '', client_phone: qt.client.phone || '',
+        client_address: qt.client.address || '', client_gstin: qt.client.gstin || '',
+        gst_type: qt.type || 'intra', project_code: qt.project || null,
+        subtotal: qt.subtotal, tax: qt.tax, total: qt.total, notes: qt.notes || '', terms: qt.terms || '',
+      },
+      items: mapItems(items),
+    },
+  });
+}
+export async function getQuoteItems(quoteId) {
+  return req('/quotes/' + quoteId + '/items');
+}
+export async function updateQuoteStatus(id, status) {
+  return req('/quotes/' + id + '/status', { method: 'PUT', body: { status } });
+}
+
 export default {
   getBalance, updateBalance, loginUser, logoutUser, getUsers, createUser, updateUser, deleteUser,
   getProjects, addProject, updateProject, deleteProject,
@@ -334,5 +509,10 @@ export default {
   getChangeRequests, getMyChangeRequests, createChangeRequest, reviewChangeRequest,
   getInventoryCategories, addInventoryCategory, updateInventoryCategory, deleteInventoryCategory,
   getInventoryProducts, addInventoryProduct, updateInventoryProduct, updateInventoryStock, deleteInventoryProduct,
-  getInventoryTransactions, getInventoryTransactionsByProduct, stockMovement,
+  getInventoryTransactions, getInventoryTransactionsByProduct, stockMovement, addInventoryTransaction,
+  getProducts, addProduct, updateProduct, deleteProduct, getProductTypes, addProductType,
+  getRequisitions, addRequisition, getRequisitionItems, updateRequisitionStatus, deleteRequisition,
+  getPurchaseOrders, addPurchaseOrder, getPOItems, updatePOStatus,
+  getInvoices, addInvoice, getInvoiceItems, markInvoicePaid, deleteInvoice, updateInvoice,
+  getQuotes, addQuote, getQuoteItems, updateQuoteStatus,
 };
