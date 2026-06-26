@@ -1,0 +1,25 @@
+# Render Blueprint — deploys the Spring Boot backend (backend/Dockerfile).
+# In Render: New + → Blueprint → connect this repo → it reads this file.
+# Then set the four secret env vars (marked sync:false) when prompted.
+services:
+  - type: web
+    name: astrochakra-backend
+    runtime: docker
+    repo: https://github.com/hadakunal909-debug/AstroChakraAccounting
+    branch: feat/project-fund-source
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: SUPABASE_DB_URL
+        sync: false   # jdbc:postgresql://aws-1-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+      - key: SUPABASE_DB_USER
+        sync: false   # postgres.oazvkbvqbarghmcxiagc
+      - key: SUPABASE_DB_PASSWORD
+        sync: false   # your DB password
+      - key: JWT_SECRET
+        sync: false   # a long random string (32+ chars)
+      - key: CORS_ORIGINS
+        value: https://accounting.astrochakra.co
