@@ -2,7 +2,6 @@ package com.astrochakra.accounting.service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +38,6 @@ public class BalanceService {
         Balance b = repo.findAll().stream().findFirst().orElse(null);
         if (b == null) {
             b = new Balance();
-            b.setId(UUID.randomUUID());
             b.setBalance(BigDecimal.ZERO);
             b.setLiquidReserve(BigDecimal.ZERO);
         }

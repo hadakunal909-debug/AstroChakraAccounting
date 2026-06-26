@@ -2,7 +2,6 @@ package com.astrochakra.accounting.service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,7 +37,6 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
         AppUser u = new AppUser();
-        u.setId(UUID.randomUUID());
         u.setUsername(r.username());
         u.setPasswordHash(encoder.encode(r.password()));
         u.setDisplayName(r.displayName());
@@ -51,7 +49,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto update(UUID id, UpdateUserRequest r) {
+    public UserDto update(Long id, UpdateUserRequest r) {
         AppUser u = users.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         if (r.displayName() != null) u.setDisplayName(r.displayName());
@@ -64,7 +62,7 @@ public class UserService {
     }
 
     @Transactional
-    public void delete(UUID id) {
+    public void delete(Long id) {
         users.deleteById(id);
     }
 }

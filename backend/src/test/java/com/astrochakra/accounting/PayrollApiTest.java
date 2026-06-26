@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +47,6 @@ class PayrollApiTest {
         resources.deleteAll();
         balances.deleteAll();
         Balance b = new Balance();
-        b.setId(UUID.randomUUID());
         b.setBalance(new BigDecimal("10000"));
         b.setLiquidReserve(BigDecimal.ZERO);
         balances.save(b);

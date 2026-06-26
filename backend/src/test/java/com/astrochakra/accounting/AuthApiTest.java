@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +37,6 @@ class AuthApiTest {
     void seed() {
         users.deleteAll();
         AppUser u = new AppUser();
-        u.setId(UUID.randomUUID());
         u.setUsername("admin");
         u.setPasswordHash("plain123"); // legacy plaintext, as the current app stores it
         u.setDisplayName("Admin User");

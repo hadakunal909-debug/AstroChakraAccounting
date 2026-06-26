@@ -38,7 +38,7 @@ public class SalaryService {
         String txNote = "Salary: " + r.resourceName() + (note.isBlank() ? "" : " — " + note);
 
         CreateTransactionRequest tx = new CreateTransactionRequest(
-                LocalDate.now().toString(),
+                LocalDate.now(),
                 isProjectFund ? fund : null,
                 r.resourceName(),
                 r.amount(),

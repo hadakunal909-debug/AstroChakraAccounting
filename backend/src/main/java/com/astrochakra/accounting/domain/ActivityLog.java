@@ -1,10 +1,11 @@
 package com.astrochakra.accounting.domain;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -17,8 +18,9 @@ import lombok.Setter;
 public class ActivityLog {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private UUID id;
+    private Long id;
 
     @Column(name = "user_name")
     private String userName;
@@ -33,7 +35,7 @@ public class ActivityLog {
     private String entityType;
 
     @Column(name = "entity_id")
-    private UUID entityId;
+    private Long entityId;
 
     @Column(name = "description")
     private String description;

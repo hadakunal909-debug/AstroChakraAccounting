@@ -51,12 +51,12 @@ class CoreApiTest {
            .andExpect(jsonPath("$.settled", is(false)))
            .andExpect(content().json("{\"amount\":250}"))
            .andReturn().getResponse().getContentAsString();
-        String id = JsonPath.read(body, "$.id");
+        String id = String.valueOf((Object) JsonPath.read(body, "$.id"));
 
-        // It appears in the list
+        // It appears in the list (ids are numeric now)
         mvc.perform(get("/api/transactions"))
            .andExpect(status().isOk())
-           .andExpect(jsonPath("$[*].id", hasItem(id)));
+           .andExpect(jsonPath("$[*].id", hasItem(Integer.valueOf(id))));
 
         // Edit tags only — assign a project + change category; amount must NOT change
         mvc.perform(patch("/api/transactions/" + id).contentType(MediaType.APPLICATION_JSON)

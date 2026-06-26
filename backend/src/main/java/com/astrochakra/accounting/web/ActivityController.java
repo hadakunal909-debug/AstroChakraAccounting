@@ -2,7 +2,6 @@ package com.astrochakra.accounting.web;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +33,6 @@ public class ActivityController {
     @PostMapping
     public ActivityLog log(@RequestBody ActivityLogRequest r) {
         ActivityLog a = new ActivityLog();
-        a.setId(UUID.randomUUID());
         a.setUserName(r.userName());
         a.setUserRole(r.userRole());
         a.setAction(r.action());

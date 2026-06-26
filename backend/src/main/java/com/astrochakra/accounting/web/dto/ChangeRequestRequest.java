@@ -1,12 +1,10 @@
 package com.astrochakra.accounting.web.dto;
 
-import java.util.UUID;
-
 /** snake_case: requested_by, entity_type, entity_id, change_type. */
 public record ChangeRequestRequest(
         String requestedBy,
         String entityType,
-        UUID entityId,
+        Long entityId,
         String changeType,
         String description) {
 }

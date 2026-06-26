@@ -2,10 +2,12 @@ package com.astrochakra.accounting.domain;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
+import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -18,12 +20,12 @@ import lombok.Setter;
 public class Transaction {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private UUID id;
+    private Long id;
 
-    // Stored as an ISO date string (YYYY-MM-DD), matching the existing data.
     @Column(name = "date")
-    private String date;
+    private LocalDate date;
 
     @Column(name = "project_code")
     private String projectCode;
@@ -56,7 +58,7 @@ public class Transaction {
     private Boolean isReversal = Boolean.FALSE;
 
     @Column(name = "original_id")
-    private UUID originalId;
+    private Long originalId;
 
     @Column(name = "reverses_kind")
     private String reversesKind;

@@ -2,24 +2,26 @@ package com.astrochakra.accounting.domain;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
  * Maps the existing single-row {@code balance} table:
- * columns balance, liquid_reserve, updated_at.
+ * columns balance, liquid_reserve, updated_at. PK is a bigint identity.
  */
 @Entity
 @Table(name = "balance")
 public class Balance {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private UUID id;
+    private Long id;
 
     @Column(name = "balance")
     private BigDecimal balance = BigDecimal.ZERO;
@@ -30,8 +32,8 @@ public class Balance {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public BigDecimal getBalance() { return balance; }
     public void setBalance(BigDecimal balance) { this.balance = balance; }

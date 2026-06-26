@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,12 +46,10 @@ class MoneyApiTest {
         balances.deleteAll();
         projects.deleteAll();
         Balance b = new Balance();
-        b.setId(UUID.randomUUID());
         b.setBalance(new BigDecimal("10000"));
         b.setLiquidReserve(new BigDecimal("2000"));
         balances.save(b);
         Project p = new Project();
-        p.setId(UUID.randomUUID());
         p.setCode("PRJ-X");
         p.setName("Project X");
         p.setFixedBudget(new BigDecimal("5000"));
@@ -102,7 +99,7 @@ class MoneyApiTest {
         String body = mvc.perform(post("/api/money/transaction").contentType(JSON)
                 .content("{\"date\":\"2026-04-15\",\"person\":\"A\",\"amount\":400,\"kind\":\"general_expense\",\"fund_source\":\"available\"}"))
            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        String id = JsonPath.read(body, "$.id");
+        String id = String.valueOf((Object) JsonPath.read(body, "$.id"));
         mvc.perform(get("/api/balance")).andExpect(content().json("{\"balance\":9600}"));
 
         mvc.perform(post("/api/money/transaction/" + id + "/settle").contentType(JSON).content("{\"note\":\"correction\"}"))

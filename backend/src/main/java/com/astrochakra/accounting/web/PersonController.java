@@ -2,7 +2,6 @@ package com.astrochakra.accounting.web;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,7 +37,6 @@ public class PersonController {
     @PostMapping
     public Person create(@RequestBody PersonRequest r) {
         Person p = new Person();
-        p.setId(UUID.randomUUID());
         p.setName(r.name());
         p.setRole(r.role() == null ? "Member" : r.role());
         p.setCreatedAt(Instant.now());
@@ -47,7 +45,7 @@ public class PersonController {
     }
 
     @PutMapping("/{id}")
-    public Person update(@PathVariable UUID id, @RequestBody PersonRequest r) {
+    public Person update(@PathVariable Long id, @RequestBody PersonRequest r) {
         Person p = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Person not found"));
         if (r.name() != null) p.setName(r.name());
@@ -58,7 +56,7 @@ public class PersonController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
+    public void delete(@PathVariable Long id) {
         repo.deleteById(id);
     }
 }

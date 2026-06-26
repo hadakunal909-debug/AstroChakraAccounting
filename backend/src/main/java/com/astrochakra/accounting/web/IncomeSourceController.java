@@ -2,7 +2,6 @@ package com.astrochakra.accounting.web;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +31,6 @@ public class IncomeSourceController {
     @PostMapping
     public IncomeSource create(@RequestBody NameRequest r) {
         IncomeSource s = new IncomeSource();
-        s.setId(UUID.randomUUID());
         s.setName(r.name());
         s.setCreatedAt(Instant.now());
         return repo.save(s);

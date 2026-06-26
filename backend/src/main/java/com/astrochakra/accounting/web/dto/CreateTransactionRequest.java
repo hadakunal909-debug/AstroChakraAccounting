@@ -1,11 +1,11 @@
 package com.astrochakra.accounting.web.dto;
 
 import java.math.BigDecimal;
-import java.util.UUID;
+import java.time.LocalDate;
 
 /** JSON keys are snake_case (project_code, bill_url, is_reversal, fund_source, ...). */
 public record CreateTransactionRequest(
-        String date,
+        LocalDate date,
         String projectCode,
         String person,
         BigDecimal amount,
@@ -15,7 +15,7 @@ public record CreateTransactionRequest(
         String billUrl,
         String billName,
         Boolean isReversal,
-        UUID originalId,
+        Long originalId,
         String reversesKind,
         String fundSource) {
 }

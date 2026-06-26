@@ -1,7 +1,6 @@
 package com.astrochakra.accounting.web;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,13 +39,13 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public UserDto update(@PathVariable UUID id, @RequestBody UpdateUserRequest req) {
+    public UserDto update(@PathVariable Long id, @RequestBody UpdateUserRequest req) {
         return service.update(id, req);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
+    public void delete(@PathVariable Long id) {
         service.delete(id);
     }
 }

@@ -2,7 +2,6 @@ package com.astrochakra.accounting.web;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +31,6 @@ public class RemovalController {
     @PostMapping
     public Removal create(@RequestBody RemovalRequest r) {
         Removal x = new Removal();
-        x.setId(UUID.randomUUID());
         x.setDate(r.date());
         x.setTime(r.time());
         x.setType(r.type());

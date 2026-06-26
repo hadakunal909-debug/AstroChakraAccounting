@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -23,12 +22,10 @@ import com.astrochakra.accounting.web.dto.ReconcileResult;
 
 /**
  * Atomic money operations: each method does the full multi-step flow in ONE
- * database transaction (insert/update + balance + reserve + project allocation),
- * replacing the multi-call orchestration the browser does today.
+ * database transaction (insert/update + balance + reserve + project allocation).
  *
- * Balance model (current "Available = bank balance"): every expense reduces the
- * bank balance regardless of fund source; reserve/project allocations are tracked
- * for display only.
+ * Balance model ("Available = bank balance"): every expense reduces the bank
+ * balance regardless of fund source; reserve/project allocations are display-only.
  */
 @Service
 public class MoneyService {
@@ -45,7 +42,6 @@ public class MoneyService {
         this.projects = projects;
     }
 
-    /** Insert a transaction and apply its balance effect atomically. */
     @Transactional
     public Transaction record(CreateTransactionRequest r) {
         Transaction t = buildTx(r);
@@ -58,7 +54,6 @@ public class MoneyService {
         if ("income".equals(t.getKind())) {
             b.setBalance(nz(b.getBalance()).add(amt));
         } else {
-            // Every expense reduces the bank balance.
             b.setBalance(nz(b.getBalance()).subtract(amt));
             if ("reserve".equals(fund)) {
                 b.setLiquidReserve(maxZero(nz(b.getLiquidReserve()).subtract(amt)));
@@ -74,17 +69,15 @@ public class MoneyService {
         return t;
     }
 
-    /** Mark settled, write a JV reversal record, and restore the balance — atomically. */
     @Transactional
-    public Transaction settle(UUID id, String note) {
+    public Transaction settle(Long id, String note) {
         Transaction orig = txs.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
         orig.setSettled(Boolean.TRUE);
         txs.save(orig);
 
         Transaction jv = new Transaction();
-        jv.setId(UUID.randomUUID());
-        jv.setDate(LocalDate.now().toString());
+        jv.setDate(LocalDate.now());
         jv.setProjectCode(orig.getProjectCode());
         jv.setPerson(orig.getPerson());
         jv.setAmount(orig.getAmount());
@@ -120,7 +113,6 @@ public class MoneyService {
         return jv;
     }
 
-    /** Normalize legacy reserve/project-fund tags, zero the reserve, set the true balance. */
     @Transactional
     public ReconcileResult reconcile(BigDecimal trueBalance) {
         List<Transaction> affected = txs.findAll().stream()
@@ -138,8 +130,7 @@ public class MoneyService {
         BigDecimal delta = trueBalance.subtract(nz(b.getBalance()));
         if (delta.signum() != 0) {
             Transaction adj = new Transaction();
-            adj.setId(UUID.randomUUID());
-            adj.setDate(LocalDate.now().toString());
+            adj.setDate(LocalDate.now());
             adj.setPerson("");
             adj.setAmount(delta.abs());
             adj.setKind(delta.signum() > 0 ? "income" : "general_expense");
@@ -157,7 +148,6 @@ public class MoneyService {
         return new ReconcileResult(affected.size(), delta, trueBalance);
     }
 
-    /** Bulk-insert imported rows and set the balance (closing balance, or current + net). */
     @Transactional
     public ImportResult importStatement(List<CreateTransactionRequest> rows, BigDecimal closingBalance) {
         BigDecimal net = ZERO;
@@ -179,7 +169,6 @@ public class MoneyService {
 
     private Transaction buildTx(CreateTransactionRequest r) {
         Transaction t = new Transaction();
-        t.setId(UUID.randomUUID());
         t.setDate(r.date());
         t.setProjectCode(blankToNull(r.projectCode()));
         t.setPerson(r.person());
@@ -201,7 +190,6 @@ public class MoneyService {
     private Balance loadOrCreateBalance() {
         return balances.findAll().stream().findFirst().orElseGet(() -> {
             Balance nb = new Balance();
-            nb.setId(UUID.randomUUID());
             nb.setBalance(ZERO);
             nb.setLiquidReserve(ZERO);
             return nb;

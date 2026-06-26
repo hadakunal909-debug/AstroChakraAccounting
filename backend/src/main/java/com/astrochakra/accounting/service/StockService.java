@@ -92,7 +92,6 @@ public class StockService {
     private Balance loadOrCreateBalance() {
         return balances.findAll().stream().findFirst().orElseGet(() -> {
             Balance nb = new Balance();
-            nb.setId(UUID.randomUUID());
             nb.setBalance(ZERO);
             nb.setLiquidReserve(ZERO);
             return nb;

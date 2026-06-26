@@ -1,9 +1,7 @@
 package com.astrochakra.accounting.service;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,7 +30,6 @@ public class TransactionService {
     @Transactional
     public Transaction create(CreateTransactionRequest r) {
         Transaction t = new Transaction();
-        t.setId(UUID.randomUUID());
         t.setDate(r.date());
         t.setProjectCode(blankToNull(r.projectCode()));
         t.setPerson(r.person());
@@ -47,7 +44,7 @@ public class TransactionService {
         t.setOriginalId(r.originalId());
         t.setReversesKind(r.reversesKind());
         t.setFundSource(r.fundSource() == null ? "available" : r.fundSource());
-        t.setCreatedAt(Instant.now());
+        t.setCreatedAt(java.time.Instant.now());
         return txs.save(t);
     }
 
@@ -61,7 +58,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public Transaction settle(UUID id) {
+    public Transaction settle(Long id) {
         Transaction t = find(id);
         t.setSettled(Boolean.TRUE);
         return txs.save(t);
@@ -69,7 +66,7 @@ public class TransactionService {
 
     /** Edit tags only — never amount/kind/fund_source. */
     @Transactional
-    public Transaction updateMeta(UUID id, TransactionMetaRequest r) {
+    public Transaction updateMeta(Long id, TransactionMetaRequest r) {
         Transaction t = find(id);
         t.setDate(r.date());
         t.setPerson(r.person());
@@ -80,7 +77,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public Transaction updateFundSource(UUID id, String fundSource) {
+    public Transaction updateFundSource(Long id, String fundSource) {
         Transaction t = find(id);
         t.setFundSource(fundSource);
         return txs.save(t);
@@ -91,7 +88,7 @@ public class TransactionService {
         return txs.renamePerson(oldName, newName);
     }
 
-    private Transaction find(UUID id) {
+    private Transaction find(Long id) {
         return txs.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
     }

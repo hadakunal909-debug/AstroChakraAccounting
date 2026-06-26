@@ -1,10 +1,11 @@
 package com.astrochakra.accounting.domain;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -17,8 +18,9 @@ import lombok.Setter;
 public class ChangeRequest {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private UUID id;
+    private Long id;
 
     @Column(name = "requested_by")
     private String requestedBy;
@@ -27,7 +29,7 @@ public class ChangeRequest {
     private String entityType;
 
     @Column(name = "entity_id")
-    private UUID entityId;
+    private Long entityId;
 
     @Column(name = "change_type")
     private String changeType;

@@ -2,7 +2,6 @@ package com.astrochakra.accounting.web;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,7 +42,6 @@ public class ChangeRequestController {
     @PostMapping
     public ChangeRequest create(@RequestBody ChangeRequestRequest r) {
         ChangeRequest c = new ChangeRequest();
-        c.setId(UUID.randomUUID());
         c.setRequestedBy(r.requestedBy());
         c.setEntityType(r.entityType());
         c.setEntityId(r.entityId());
@@ -55,7 +53,7 @@ public class ChangeRequestController {
     }
 
     @PutMapping("/{id}/review")
-    public ChangeRequest review(@PathVariable UUID id, @RequestBody ReviewRequest r) {
+    public ChangeRequest review(@PathVariable Long id, @RequestBody ReviewRequest r) {
         ChangeRequest c = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Change request not found"));
         c.setStatus(r.status());

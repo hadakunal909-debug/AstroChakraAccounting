@@ -1,7 +1,5 @@
 package com.astrochakra.accounting.web;
 
-import java.util.UUID;
-
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +36,7 @@ public class MoneyController {
     }
 
     @PostMapping("/transaction/{id}/settle")
-    public Transaction settle(@PathVariable UUID id, @RequestBody(required = false) SettleRequest req) {
+    public Transaction settle(@PathVariable Long id, @RequestBody(required = false) SettleRequest req) {
         return money.settle(id, req == null ? null : req.note());
     }
 

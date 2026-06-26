@@ -1,10 +1,8 @@
 package com.astrochakra.accounting.web;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,17 +46,17 @@ public class TransactionController {
     }
 
     @PutMapping("/{id}/settle")
-    public Transaction settle(@PathVariable UUID id) {
+    public Transaction settle(@PathVariable Long id) {
         return service.settle(id);
     }
 
     @PatchMapping("/{id}")
-    public Transaction updateMeta(@PathVariable UUID id, @RequestBody TransactionMetaRequest req) {
+    public Transaction updateMeta(@PathVariable Long id, @RequestBody TransactionMetaRequest req) {
         return service.updateMeta(id, req);
     }
 
     @PatchMapping("/{id}/fund-source")
-    public Transaction updateFundSource(@PathVariable UUID id, @RequestBody FundSourceRequest req) {
+    public Transaction updateFundSource(@PathVariable Long id, @RequestBody FundSourceRequest req) {
         return service.updateFundSource(id, req.fundSource());
     }
 
