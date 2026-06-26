@@ -5,6 +5,7 @@ name: Deploy frontend to cPanel
 #   CPANEL_FTP_SERVER    e.g. ftp.yourdomain.com   (or the server hostname/IP)
 #   CPANEL_FTP_USERNAME  your cPanel/FTP username
 #   CPANEL_FTP_PASSWORD  your cPanel/FTP password
+# Until those secrets are set, the build still runs and the deploy step is skipped (not failed).
 # The Java backend is NOT deployed here (cPanel shared hosting can't run it) — see DEPLOYMENT.md.
 
 on:
@@ -15,6 +16,10 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.CPANEL_FTP_SERVER }}
+      FTP_USERNAME: ${{ secrets.CPANEL_FTP_USERNAME }}
+      FTP_PASSWORD: ${{ secrets.CPANEL_FTP_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,7 +27,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -31,7 +36,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Notice if FTP secrets are missing
+        if: ${{ env.FTP_SERVER == '' }}
+        run: echo "::warning::cPanel FTP secrets not set — skipping deploy. Add CPANEL_FTP_SERVER, CPANEL_FTP_USERNAME and CPANEL_FTP_PASSWORD in Settings → Secrets and variables → Actions, then re-run."
+
       - name: Deploy to cPanel via FTPS
+        if: ${{ env.FTP_SERVER != '' }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
