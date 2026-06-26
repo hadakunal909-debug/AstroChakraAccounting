@@ -49,5 +49,7 @@ jobs:
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
           protocol: ftps
           local-dir: ./dist/
-          # Must end with a slash. Change to e.g. public_html/app/ to deploy into a subfolder.
-          server-dir: public_html/
+          # The dedicated FTP account is rooted at the web root (Directory = public_html),
+          # so "./" = the site root. If you instead use the MAIN cPanel account (rooted at
+          # /home), set this to public_html/ . Must end with a slash.
+          server-dir: ./
