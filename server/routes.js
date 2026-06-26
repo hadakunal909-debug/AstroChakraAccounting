@@ -793,6 +793,28 @@ router.put('/purchase-orders/:id/status', h(async (req, res) => {
   await q('update purchase_orders set status=$1 where id=$2', [(req.body || {}).status, req.params.id]);
   res.status(204).end();
 }));
+// Full PO edit (fields + items + status). Caller computes the status transition.
+router.put('/purchase-orders/:id', h(async (req, res) => {
+  const po = (req.body || {}).purchase_order || {};
+  const items = (req.body || {}).items; // null/undefined => leave items untouched
+  await withTx(async (c) => {
+    await c.query(
+      `update purchase_orders set
+         vendor_name=$1, vendor_email=$2, vendor_phone=$3, vendor_address=$4, vendor_gstin=$5,
+         date=coalesce($6::date, current_date), delivery_date=$7, gst_type=$8, project_code=$9,
+         subtotal=$10, tax=$11, total=$12, notes=$13, status=$14, updated_at=now()
+       where id=$15`,
+      [po.vendor_name || '', po.vendor_email || '', po.vendor_phone || '', po.vendor_address || '', po.vendor_gstin || '',
+       po.date || null, po.delivery_date || null, po.gst_type || 'intra', pc(po.project_code),
+       num(po.subtotal), num(po.tax), num(po.total), po.notes || '', po.status || 'draft', req.params.id]
+    );
+    if (items != null) {
+      await c.query('delete from po_items where po_id = $1', [req.params.id]);
+      await insertItems(c, 'po_items', 'po_id', req.params.id, items);
+    }
+  });
+  res.status(204).end();
+}));
 
 // ===== INVOICES ===========================================================
 router.get('/invoices', h(async (_req, res) => {
@@ -882,6 +904,28 @@ router.get('/quotes/:id/items', h(async (req, res) => {
 }));
 router.put('/quotes/:id/status', h(async (req, res) => {
   await q('update quotes set status=$1 where id=$2', [(req.body || {}).status, req.params.id]);
+  res.status(204).end();
+}));
+// Full quote edit (fields + items + status).
+router.put('/quotes/:id', h(async (req, res) => {
+  const qt = (req.body || {}).quote || {};
+  const items = (req.body || {}).items; // null/undefined => leave items untouched
+  await withTx(async (c) => {
+    await c.query(
+      `update quotes set
+         client_name=$1, client_email=$2, client_phone=$3, client_address=$4, client_gstin=$5,
+         date=coalesce($6::date, current_date), valid_until=$7, gst_type=$8, project_code=$9,
+         subtotal=$10, tax=$11, total=$12, notes=$13, terms=$14, status=$15, updated_at=now()
+       where id=$16`,
+      [qt.client_name || '', qt.client_email || '', qt.client_phone || '', qt.client_address || '', qt.client_gstin || '',
+       qt.date || null, qt.valid_until || null, qt.gst_type || 'intra', pc(qt.project_code),
+       num(qt.subtotal), num(qt.tax), num(qt.total), qt.notes || '', qt.terms || '', qt.status || 'draft', req.params.id]
+    );
+    if (items != null) {
+      await c.query('delete from quote_items where quote_id = $1', [req.params.id]);
+      await insertItems(c, 'quote_items', 'quote_id', req.params.id, items);
+    }
+  });
   res.status(204).end();
 }));
 

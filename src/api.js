@@ -423,6 +423,21 @@ export async function getPOItems(poId) {
 export async function updatePOStatus(id, status) {
   return req('/purchase-orders/' + id + '/status', { method: 'PUT', body: { status } });
 }
+export async function updatePurchaseOrder(id, po, items) {
+  return req('/purchase-orders/' + id, {
+    method: 'PUT',
+    body: {
+      purchase_order: {
+        vendor_name: po.vendor.name, vendor_email: po.vendor.email || '', vendor_phone: po.vendor.phone || '',
+        vendor_address: po.vendor.address || '', vendor_gstin: po.vendor.gstin || '',
+        date: po.date, delivery_date: po.deliveryDate || null, gst_type: po.type || 'intra',
+        project_code: po.project || null, subtotal: po.subtotal, tax: po.tax, total: po.total,
+        notes: po.notes || '', status: po.status,
+      },
+      items: items ? mapItems(items) : null,
+    },
+  });
+}
 
 // --- invoices ---
 export async function getInvoices() {
@@ -495,6 +510,21 @@ export async function getQuoteItems(quoteId) {
 export async function updateQuoteStatus(id, status) {
   return req('/quotes/' + id + '/status', { method: 'PUT', body: { status } });
 }
+export async function updateQuote(id, qt, items) {
+  return req('/quotes/' + id, {
+    method: 'PUT',
+    body: {
+      quote: {
+        client_name: qt.client.name, client_email: qt.client.email || '', client_phone: qt.client.phone || '',
+        client_address: qt.client.address || '', client_gstin: qt.client.gstin || '',
+        date: qt.date, valid_until: qt.validUntil || null, gst_type: qt.type || 'intra',
+        project_code: qt.project || null, subtotal: qt.subtotal, tax: qt.tax, total: qt.total,
+        notes: qt.notes || '', terms: qt.terms || '', status: qt.status || 'draft',
+      },
+      items: items ? mapItems(items) : null,
+    },
+  });
+}
 
 export default {
   getBalance, updateBalance, loginUser, logoutUser, getUsers, createUser, updateUser, deleteUser,
@@ -512,7 +542,7 @@ export default {
   getInventoryTransactions, getInventoryTransactionsByProduct, stockMovement, addInventoryTransaction,
   getProducts, addProduct, updateProduct, deleteProduct, getProductTypes, addProductType,
   getRequisitions, addRequisition, getRequisitionItems, updateRequisitionStatus, deleteRequisition,
-  getPurchaseOrders, addPurchaseOrder, getPOItems, updatePOStatus,
+  getPurchaseOrders, addPurchaseOrder, getPOItems, updatePOStatus, updatePurchaseOrder,
   getInvoices, addInvoice, getInvoiceItems, markInvoicePaid, deleteInvoice, updateInvoice,
-  getQuotes, addQuote, getQuoteItems, updateQuoteStatus,
+  getQuotes, addQuote, getQuoteItems, updateQuoteStatus, updateQuote,
 };
