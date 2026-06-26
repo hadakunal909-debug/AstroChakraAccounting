@@ -1,0 +1,86 @@
+name: Deploy backend to cPanel
+
+# Uploads the Node/Express backend (server/) to the cPanel "Setup Node.js App"
+# application root over FTPS, then restarts Passenger. Only source files are
+# synced — node_modules is NOT uploaded (cPanel installs deps in its own Node
+# virtualenv via "Run NPM Install"), so this never clobbers the server's deps.
+#
+# Repository secrets (Settings -> Secrets and variables -> Actions):
+#   CPANEL_API_DIR        REQUIRED. Server-dir = the Node app's application root,
+#                         relative to the deploy FTP user's home. MUST end with a
+#                         slash. E.g. "accounting-api/" (main account) or "./"
+#                         (a dedicated FTP user rooted at the app dir).
+#   CPANEL_API_FTP_SERVER / _USERNAME / _PASSWORD   OPTIONAL. Use these if the
+#                         Node app dir needs different FTP credentials than the
+#                         frontend docroot account. If unset, the frontend's
+#                         CPANEL_FTP_SERVER / _USERNAME / _PASSWORD are reused.
+#
+# ONE-TIME cPanel setup (not done by CI — needs the cPanel UI):
+#   1. Setup Node.js App -> Create: Application root = CPANEL_API_DIR path,
+#      Application startup file = app.js, pick a Node 18+ version.
+#   2. Environment variables: DATABASE_URL, JWT_SECRET, CORS_ORIGINS
+#      (see server/.env.example). Passenger provides PORT automatically.
+#   3. After the FIRST deploy (and whenever server/package.json changes),
+#      click "Run NPM Install" once. Then "Restart".
+#
+# If CPANEL_API_DIR (or the FTP host) is unset, the build runs and the deploy
+# step is skipped (not failed).
+
+on:
+  push:
+    branches: [ feat/project-fund-source ]
+    paths:
+      - 'server/**'
+      - '.github/workflows/deploy-backend-cpanel.yml'
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.CPANEL_API_FTP_SERVER || secrets.CPANEL_FTP_SERVER }}
+      API_DIR: ${{ secrets.CPANEL_API_DIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install backend dependencies (validates the lockfile)
+        working-directory: server
+        run: npm ci --omit=dev
+
+      - name: Prepare Passenger restart trigger
+        run: |
+          mkdir -p server/tmp
+          echo "restart $(date -u +%FT%TZ) ${GITHUB_SHA}" > server/tmp/restart.txt
+
+      - name: Notice if backend deploy target is missing
+        if: ${{ env.FTP_SERVER == '' || env.API_DIR == '' }}
+        run: echo "::warning::Backend deploy skipped — set CPANEL_API_DIR (the Node app root, e.g. 'accounting-api/') and FTP secrets, then re-run."
+
+      - name: Deploy server/ to the cPanel Node app root via FTPS
+        if: ${{ env.FTP_SERVER != '' && env.API_DIR != '' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.CPANEL_API_FTP_SERVER || secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_API_FTP_USERNAME || secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_API_FTP_PASSWORD || secrets.CPANEL_FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./server/
+          server-dir: ${{ secrets.CPANEL_API_DIR }}
+          # Sync source only. node_modules stays out (cPanel installs it); .env
+          # stays out (set env vars in the cPanel UI). Incremental sync does NOT
+          # delete remote files, so the server's node_modules is left intact.
+          exclude: |
+            **/node_modules/**
+            **/.git*
+            **/.git*/**
+            **/.env
+            **/.env.*
+            **/*.log
