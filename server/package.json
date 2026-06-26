@@ -1,0 +1,17 @@
+{
+  "name": "astrochakra-backend-node",
+  "version": "1.0.0",
+  "description": "Node/Express backend for AstroChakra Accounting (runs on cPanel Setup Node.js App)",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1"
+  }
+}
